@@ -1,0 +1,51 @@
+{
+    "node_type": "Module",
+    "attributes": {
+        "functions": [
+            {
+                "node_type": "Function",
+                "attributes": {
+                    "name": "main",
+                    "blocks": [
+                        {
+                            "node_type": "Block",
+                            "attributes": {
+                                "name": "entry",
+                                "instructions": [
+                                    {
+                                        "node_type": "Instruction",
+                                        "attributes": {
+                                            "opcode": "alloca",
+                                            "operands": [
+                                                "i32 1"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "node_type": "Instruction",
+                                        "attributes": {
+                                            "opcode": "store",
+                                            "operands": [
+                                                "i32 0",
+                                                "  %0 = alloca i32, align 4"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "node_type": "Instruction",
+                                        "attributes": {
+                                            "opcode": "ret",
+                                            "operands": [
+                                                "i32 0"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
