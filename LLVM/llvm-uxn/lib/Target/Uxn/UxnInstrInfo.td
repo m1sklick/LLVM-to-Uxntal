@@ -195,7 +195,7 @@ def LDR  : InstUxn<(outs GRRegs:$val), (ins memsrc:$addr),
   bits<16> addr;
   let Inst{27-25} = 0b010;
   let Inst{24} = 1; // not indexed
-  let Inst{23} = 1; // add ofset
+  let Inst{23} = 1; // add offset
   let Inst{22} = 0;
   let Inst{21} = 0; // no writeback
   let Inst{20} = 1; // load
@@ -211,7 +211,7 @@ def STR : InstUxn<(outs), (ins GRRegs:$val, memsrc:$addr),
   bits<4> val;
   let Inst{27-25} = 0b010;
   let Inst{24} = 1; // not indexed
-  let Inst{23} = 1; // add ofset
+  let Inst{23} = 1; // add offset
   let Inst{22} = 0;
   let Inst{21} = 0; // no writeback
   let Inst{20} = 0; // store
@@ -226,11 +226,10 @@ def STR : InstUxn<(outs), (ins GRRegs:$val, memsrc:$addr),
 
 let isTerminator = 1, isReturn = 1, isBarrier = 1, Uses = [LR] in {
   def RET : InstUxn<(outs), (ins variable_ops),
-                    "bx lr",  [(UxnRetFlag)]> {
+                    "brk",  [(UxnRetFlag)]> { // Changed to UXNtal BRK equivalent
     let Inst{27-0}  = 0b0001001011111111111100011110;
   }
 }
-
 
 //===----------------------------------------------------------------------===//
 // Call Instructions
@@ -238,8 +237,8 @@ let isTerminator = 1, isReturn = 1, isBarrier = 1, Uses = [LR] in {
 
 let isCall = 1, Defs = [LR], Uses = [SP] in {
   def BL : BranchInst<0b1011, (outs), (ins GRRegs:$addr),
-                      "bl $addr",
-                      [(uxn_call i32:$addr)]> {
+                      "jsr $addr",
+                      [(uxn_call i32:$addr)]> { // Changed to UXNtal JSR equivalent
     bits<4> addr;
     let Inst{31-28} = 0b1110;
     let Inst{3-0} = addr;
@@ -254,7 +253,7 @@ def : Pattern<(i32 (load_sym tglobaladdr:$addr)),  [(MOVi32 $addr)]>;
 
 let isTerminator = 1, isBranch = 1, isBarrier = 1 in {
   def B : InstUxn<(outs), (ins b_target:$dst),
-                  "b $dst", [(br bb:$dst)]> {
+                  "jmp $dst", [(br bb:$dst)]> { // Changed to UXNtal JMP equivalent
     bits<24> dst;
     let Inst{31-28} = 0b0000;
     let Inst{27-24} = 0b1010;
@@ -264,7 +263,7 @@ let isTerminator = 1, isBranch = 1, isBarrier = 1 in {
 
 let isTerminator = 1, isBranch = 1, Uses = [CPSR] in {
   def Bcc : InstUxn<(outs), (ins cc_val:$cc, b_target:$dst),
-                    "b$cc $dst",  []> {
+                    "bcc $dst",  []> { // Conditionally branch in UXNtal
   }
 }
 
