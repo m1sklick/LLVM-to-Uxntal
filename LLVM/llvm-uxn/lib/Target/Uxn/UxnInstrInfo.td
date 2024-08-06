@@ -279,3 +279,39 @@ def ADJCALLSTACKUP   : UxnPseudoInst<(outs), (ins i32imm:$amt1, i32imm:$amt2),
                                     "# ADJCALLSTACKUP $amt1",
                                     [(callseq_end timm:$amt1, timm:$amt2)]>;
 }
+
+//===----------------------------------------------------------------------===//
+// Custom Instructions for UXNtal Code Generation
+//===----------------------------------------------------------------------===//
+
+// Instruction to define a device vector
+def DEVICE_VECTOR : UxnPseudoInst<(outs), (ins i32imm:$vector),
+                                  "|10 @Console &vector $vector", []>;
+
+// Instruction for function definition
+def FUNCTION_DEF : UxnPseudoInst<(outs), (ins i32imm:$name),
+                                 "@$name ( -> )", []>;
+
+// Instruction for break
+def BRK : UxnPseudoInst<(outs), (ins), "BRK", []>;
+
+// Pseudo instruction for printing text
+def PRINT_TEXT : UxnPseudoInst<(outs), (ins), "print-text", []>;
+
+// Instruction to load string literals
+def LOAD_STR : UxnPseudoInst<(outs), (ins i32imm:$imm), "load_str $imm", []>;
+
+// Instruction to handle string literals
+def STRING_LITERAL : UxnPseudoInst<(outs), (ins i32imm:$str),
+                                   "#UXNtal string $str", []>;
+
+// Instruction for loop and condition
+def WHILE_LOOP : UxnPseudoInst<(outs), (ins), "&while", []>;
+def CONDITIONAL_BRANCH : UxnPseudoInst<(outs), (ins), "?&while", []>;
+def INCREMENT : UxnPseudoInst<(outs), (ins), "INC2", []>;
+def POP : UxnPseudoInst<(outs), (ins), "POP2", []>;
+def JMP2r : UxnPseudoInst<(outs), (ins), "JMP2r", []>;
+
+// Instruction for loading from device and executing operation
+def LDAK : UxnPseudoInst<(outs), (ins), "LDAk .Console/write DEO", []>;
+

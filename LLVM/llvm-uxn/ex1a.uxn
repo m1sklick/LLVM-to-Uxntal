@@ -1,0 +1,25 @@
+	.text
+	.macosx_version_min 10, 19
+	.file	"docs/Codeplay/examples/ex1a/hello_world.ll"
+	.globl	main
+	.type	main,@function
+main:                                   # @main
+# BB#0:                                 # %entry
+	movw r0, .L.str
+	movt r0, .L.str
+	movw r1, puts
+	movt r1, puts
+	jsr r1
+	movw r0, #0
+	brk
+.Lfunc_end0:
+	.size	main, .Lfunc_end0-main
+
+	.type	.L.str,@object          # @.str
+	.section	.rodata.str1.1,"aMS",@progbits,1
+.L.str:
+.asciiz"Hello World!"
+	.size	.L.str, 13
+
+
+	.section	".note.GNU-stack","",@progbits
