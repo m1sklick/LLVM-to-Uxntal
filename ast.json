@@ -1,0 +1,69 @@
+{
+    "node_type": "Module",
+    "attributes": {
+        "globals": [
+            {
+                "node_type": "Global",
+                "attributes": {
+                    "name": ".str",
+                    "value": "Hello World!\\00"
+                }
+            }
+        ],
+        "functions": [
+            {
+                "node_type": "Function",
+                "attributes": {
+                    "name": "puts",
+                    "blocks": []
+                }
+            },
+            {
+                "node_type": "Function",
+                "attributes": {
+                    "name": "main",
+                    "blocks": [
+                        {
+                            "node_type": "Block",
+                            "attributes": {
+                                "name": "entry",
+                                "instructions": [
+                                    {
+                                        "node_type": "Instruction",
+                                        "attributes": {
+                                            "opcode": "getelementptr",
+                                            "operands": [
+                                                "@.str = private unnamed_addr constant [13 x i8] c\"Hello World!\\00\", align 1",
+                                                "i32 0",
+                                                "i32 0"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "node_type": "Instruction",
+                                        "attributes": {
+                                            "opcode": "call",
+                                            "operands": [
+                                                "  %0 = getelementptr [13 x i8], [13 x i8]* @.str, i32 0, i32 0",
+                                                "; Function Attrs: nounwind\ndeclare i32 @puts(i8* nocapture) #0\n"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "node_type": "Instruction",
+                                        "attributes": {
+                                            "opcode": "ret",
+                                            "operands": [
+                                                "i32 0"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

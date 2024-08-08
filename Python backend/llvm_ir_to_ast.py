@@ -1,6 +1,7 @@
 # llvm_ir_to_ast.py
 import llvmlite.binding as llvm
 import json
+import re
 
 # Initialize LLVM
 llvm.initialize()
@@ -26,20 +27,31 @@ class ASTNode:
                 node_dict['attributes'][k] = v
         return node_dict
 
+def extract_global_strings(ir_code):
+    """
+    Extract strings from global variables in the LLVM IR code.
+    This method uses regex to find and extract constant strings from the IR text.
+    """
+    pattern = re.compile(r'@(?P<name>[\w.]+) = private unnamed_addr constant \[(?P<size>\d+) x i8\] c"(?P<value>.*?)"')
+    matches = pattern.finditer(ir_code)
+
+    global_strings = {}
+    for match in matches:
+        name = match.group('name')
+        value = match.group('value')
+        global_strings[name] = value
+    return global_strings
+
 def parse_llvm_ir(ir_code):
     module = llvm.parse_assembly(ir_code)
     module.verify()
 
     ast = ASTNode('Module', globals=[], functions=[])
 
-    # Capture global variables (e.g., strings)
-    for glob in module.global_variables:
-        # Use the correct way to access constant data
-        if glob.linkage == 'private' and glob.is_constant:
-            if glob.initializer is not None:
-                value = glob.initializer
-                # Convert value to a string, as it might be a constant array
-                ast.attributes['globals'].append(ASTNode('Global', name=glob.name, value=value))
+    # Extract global strings
+    global_strings = extract_global_strings(ir_code)
+    for name, value in global_strings.items():
+        ast.attributes['globals'].append(ASTNode('Global', name=name, value=value))
 
     # Capture functions and instructions
     for func in module.functions:

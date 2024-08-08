@@ -1,0 +1,15 @@
+|10 @Console &vector $2 &write $1
+|100
+@.str
+    "48 65 6c 6c 6f 20 57 6f 72 6c 64 21 00"
+@puts ( -> )
+@main ( -> )
+; Block: entry
+LDA ;.str JSR print-text
+BRK
+@print-text ( str* -- )
+    &while
+        LDAk .Console/write DEO
+        INC2 LDAk ?&while
+    POP2
+    JMP2r
