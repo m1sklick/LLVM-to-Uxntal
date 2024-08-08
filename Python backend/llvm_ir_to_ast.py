@@ -1,3 +1,4 @@
+# llvm_ir_to_ast.py
 import llvmlite.binding as llvm
 import json
 
@@ -29,8 +30,18 @@ def parse_llvm_ir(ir_code):
     module = llvm.parse_assembly(ir_code)
     module.verify()
 
-    ast = ASTNode('Module', functions=[])
+    ast = ASTNode('Module', globals=[], functions=[])
 
+    # Capture global variables (e.g., strings)
+    for glob in module.global_variables:
+        # Use the correct way to access constant data
+        if glob.linkage == 'private' and glob.is_constant:
+            if glob.initializer is not None:
+                value = glob.initializer
+                # Convert value to a string, as it might be a constant array
+                ast.attributes['globals'].append(ASTNode('Global', name=glob.name, value=value))
+
+    # Capture functions and instructions
     for func in module.functions:
         func_node = ASTNode('Function', name=func.name, blocks=[])
         ast.attributes['functions'].append(func_node)
@@ -54,11 +65,15 @@ def llvm_ir_to_ast_json(ir_code, output_file):
 
 if __name__ == "__main__":
     llvm_ir_code = """
+    @.str = private unnamed_addr constant [13 x i8] c"Hello World!\\00", align 1
+
+    declare i32 @puts(i8* nocapture) nounwind
+
     define i32 @main() {
     entry:
-      %0 = alloca i32, align 4
-      store i32 0, i32* %0, align 4
-      ret i32 0
+        %0 = getelementptr [13 x i8], [13 x i8]* @.str, i32 0, i32 0
+        call i32 @puts(i8* %0)
+        ret i32 0
     }
     """
     output_file = 'ast.json'
