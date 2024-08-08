@@ -70,8 +70,8 @@ def parse_llvm_ir(ir_code):
 
 def llvm_ir_to_ast_json(ir_code, output_file):
     ast = parse_llvm_ir(ir_code)
-    ast_dict = ast.to_dict()  # Convert AST to dictionary
-    print(json.dumps(ast_dict, indent=4))  # Debug print to verify conversion
+    ast_dict = ast.to_dict() 
+    # print(json.dumps(ast_dict, indent=4))  # Debug print to verify conversion
     with open(output_file, 'w') as f:
         json.dump(ast_dict, f, indent=4)
 

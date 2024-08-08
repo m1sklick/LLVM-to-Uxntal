@@ -9,59 +9,55 @@ llvm_to_uxn_map = {
     'call': '',  # Calls will depend on function called, handled specially
 }
 
-# Convert string to UXN format
-def string_to_uxn_string(string):
-    # Convert string to hexadecimal representation for UXN
-    return '"' + ' '.join(f'{ord(c):02x}' for c in string) + '"'
 
-# Generate UXN assembly for global strings
 def generate_uxn_globals(globals_list):
     uxn_globals = []
     for global_item in globals_list:
         if global_item['node_type'] == 'Global':
             name = global_item['attributes']['name']
             value = global_item['attributes']['value'].replace('\\00', '\0')
-            uxn_string = string_to_uxn_string(value)
+
+            uxn_string = f"\"{value}\""
             uxn_globals.append(f"@{name}\n    {uxn_string}")
     return uxn_globals
 
-# Define a function to convert LLVM operands to UXN format if needed
+
 def convert_operands_to_uxn(opcode, operands):
     if opcode == 'store':
-        # Assuming operands are [value, destination]
+
         value = operands[0]
         destination = operands[1]
-        return f"{value} ;{destination}"  # STA requires value, address format
+        return f"{value} ;{destination}"  
     elif opcode == 'getelementptr':
-        # Handle by providing the address for the string
-        return f";{operands[0].split()[0].replace('@', '')}"  # Load base address
+
+        return f";{operands[0].split()[0].replace('@', '')}" 
     elif opcode == 'call':
-        # Call operations translate to UXN subroutine invocations
+
         func_name = operands[0].strip().split()[1]
         if "puts" in func_name:
-            return "print-text"  # Call the print-text routine
-        return ''  # Default handling
+            return "print-text"  
+        return ''  
     elif opcode == 'ret':
-        return ''  # No operands needed for return
+        return ''  
     else:
-        return ' '.join(operands)  # Default case
+        return ' '.join(operands)  
 
 def llvm_instruction_to_uxn(instruction):
     opcode = instruction['attributes']['opcode']
     operands = instruction['attributes']['operands']
 
     if opcode == 'getelementptr':
-        # Handle GEP directly as it's about loading an address
+
         return f"LDA {convert_operands_to_uxn(opcode, operands)} JSR print-text"
     elif opcode == 'call':
-        # Directly handle function calls
+
         uxn_function = convert_operands_to_uxn(opcode, operands)
         if uxn_function:
             return f"JSR {uxn_function}"
         else:
             return ''
     
-    uxn_instruction = llvm_to_uxn_map.get(opcode, 'NOP')  # Default to NOP if not found
+    uxn_instruction = llvm_to_uxn_map.get(opcode, 'NOP')  
     uxn_operands = convert_operands_to_uxn(opcode, operands)
 
     return f"{uxn_instruction} {uxn_operands}".strip()
@@ -86,9 +82,9 @@ def traverse_ast(node, assembly_code):
                 assembly_code.append(uxn_instruction)
 
 def ast_to_uxn_assembly(ast):
-    assembly_code = ["|10 @Console &vector $2 &write $1", "|100"]
+    assembly_code = ["|10 @Console &vector $2 &write $1", "|100", "@on-reset ( -> )"]
     traverse_ast(ast, assembly_code)
-    # Add a print-text subroutine to handle the 'puts' call
+
     assembly_code.append("""
 @print-text ( str* -- )
     &while
