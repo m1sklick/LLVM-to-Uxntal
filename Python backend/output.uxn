@@ -1,5 +1,0 @@
-; Function: main
-; Block: entry
-PSH 0
-STA 0, %0
-BRK
