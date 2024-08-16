@@ -1,10 +1,11 @@
 |0000
 @r1 $2
+@r2 $2
 |0100
 #0007
-#0006
-MUL2
-.r1 STZ2
 .r1 LDZ2
+MUL2
+.r2 STZ2
+.r2 LDZ2
 #18 DEO
 BRK
