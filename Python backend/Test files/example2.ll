@@ -39,3 +39,19 @@ define i16 @putc(i16 %r1) {
 }
 
 @.str = private unnamed_addr constant [3 x i8] c"%c\00", align 1
+
+; |0000
+; @x $2
+; @r1 $2
+; @r2 $2
+; |0100
+; #0006 
+; .x STZ2 
+; .x LDZ2 
+; .r1 STZ2
+; .r1 LDZ2 
+; #0007 
+; MUL2 
+; .r2 STZ2
+; .r2 LDZ2 #18 DEO
+; BRK
