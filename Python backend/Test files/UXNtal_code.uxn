@@ -1,15 +1,23 @@
 |0000
+@result $2
 @r1 $2
 @r2 $2
+@r3 $2
 |0100
+.result LDZ2
+#18 DEO
+BRK
+#0000
 #0001
-#0006
 ADD2
 .r1 STZ2
-.r1 LDZ2
-#0006
-MUL2
+#0000
+#0001
+ADD2
 .r2 STZ2
+.r1 LDZ2
 .r2 LDZ2
-#18 DEO
+ADD2
+.r3 STZ2
+.r3 LDZ2
 BRK

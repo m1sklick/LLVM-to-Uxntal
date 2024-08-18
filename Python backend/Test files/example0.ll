@@ -1,7 +1,4 @@
-; LLVM version of 
-; |0100 
-; #0006 #0007 MUL2 #18 DEO 
-; BRK
+; LLVM code:
 
 define i16 @main() { ; |0100
 
@@ -23,6 +20,7 @@ define i16 @putc(i16 %r1) {
 @.str = private unnamed_addr constant [3 x i8] c"%c\00", align 1
 
 
+; The compiler's output:
 ; |0000
 ; @r1 $2
 ; |0100

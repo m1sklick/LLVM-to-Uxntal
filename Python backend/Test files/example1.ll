@@ -1,17 +1,4 @@
-; LLVM version of 
-; |0100 
-; #0006 DUP2 INC2 MUL2 #18 DEO 
-; BRK
-
-; We first translate this into a register-based version:
-
-; |0100
-; #0006 INC2 .r1 STZ2
-; #0006 .r1 LDZ2
-; MUL2 .r2 STZ2
-; .r2 LDZ2 #18 DEO
-; BRK
-
+; LLVM code:
 
 define i16 @main() { ; |0100
   %r1 = add i16 1, u0x0006
@@ -32,6 +19,8 @@ define i16 @putc(i16 %r1) {
 
 @.str = private unnamed_addr constant [3 x i8] c"%c\00", align 1
 
+
+; The compiler's output:
 ; |0000
 ; @r1 $2
 ; @r2 $2
