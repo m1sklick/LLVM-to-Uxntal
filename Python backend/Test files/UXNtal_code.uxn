@@ -4,15 +4,19 @@
 @r2 $2
 @r3 $2
 |0100
+@main
+;add_registers JSR2
+.result STZ2
 .result LDZ2
 #18 DEO
 BRK
+@add_registers
 #0000
-#0001
+#0020
 ADD2
 .r1 STZ2
 #0000
-#0001
+#0022
 ADD2
 .r2 STZ2
 .r1 LDZ2
@@ -20,4 +24,4 @@ ADD2
 ADD2
 .r3 STZ2
 .r3 LDZ2
-BRK
+JMP2r

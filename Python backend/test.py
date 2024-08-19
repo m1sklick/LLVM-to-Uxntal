@@ -44,20 +44,46 @@ def translate_instruction(instruction):
         'sub': 'SUB2',
         'mul': 'MUL2',
         'div': 'DIV2',
-        'ret': 'BRK',
     }
 
     uxntal_code = []
 
     # print(instruction.opcode)
+    # print(instruction)
 
-    if 'call i16 @putc' in str(instruction): # Translate the console output instruction
-        output = []
-        registers = re.findall(r'%([a-zA-Z]\w*)', str(instruction)) # Extract registers from console display function
-        for reg in registers:
-            output.append(f".{reg} LDZ2")
-        output.append("#18 DEO")
-        return output
+    
+    # Handle 'ret' instruction
+    if instruction.opcode == 'ret':
+        for operand in instruction.operands:
+            operand_value = get_operand_value(operand)
+            #Handle return in the main function
+            if operand_value == '#00' or operand_value == "#0000":
+                uxntal_code.append("BRK")
+            #Handle returns in other functions
+            else:
+                uxntal_code.append(f".{operand_value} LDZ2")
+
+
+
+    # Handle call instruction
+
+    if instruction.opcode == 'call':
+        if 'call i16 @putc' in str(instruction): # Translate the console output instruction
+            output = []
+            registers = re.findall(r'%([a-zA-Z]\w*)', str(instruction)) # Extract registers from console display function
+            for reg in registers:
+                output.append(f".{reg} LDZ2")
+            output.append("#18 DEO")
+            return output
+        else:
+            # print("hiadakjd: " + str(instruction))
+            # print(instruction.name)
+            for operand in instruction.operands:
+                operand_value = get_operand_value(operand)
+                uxntal_code.append(f";{operand_value} JSR2")
+                uxntal_code.append(f".{instruction.name} STZ2")
+
+
 
     if instruction.opcode in op_map:
         uxntal_op = op_map[instruction.opcode]
@@ -170,12 +196,14 @@ def llvm_to_uxntal(module):
     for function in module.functions:
         if function.name in ['printf', 'putc']:
             continue  # Ignore the functions @printf and @putc
+        uxntal_code.append(f"@{function.name}") # define a function
         for block in function.blocks:
             for instruction in block.instructions:
                 uxntal_instruction = translate_instruction(instruction)
                 
                 uxntal_code.extend(uxntal_instruction)
-
+        if function.name != "main":
+            uxntal_code.append("JMP2r") # jump back from our function if the function is not main
 
     uxntal_code = register_declarations + uxntal_code # adding declared registers to our uxntal_code
 
