@@ -10,11 +10,13 @@ entry:
   br i1 %cmp, label %ifthen, label %ifelse
 
 ifthen:
-  call i16 @putc(i16 42)
+  %r1 = mul i16 u0x0007, u0x0006
+  call i16 @putc(i16 %r1)
   br label %end
 
 ifelse:
-  call i16 @putc(i16 41)
+  %r2 = mul i16 u0x0007, u0x0005
+  call i16 @putc(i16 %r2)
   br label %end
 
 end:
@@ -31,3 +33,44 @@ define i16 @putc(i16 %r1) {
 }
 
 @.str = private unnamed_addr constant [3 x i8] c"%c\00", align 1
+
+
+; The compiler's output:
+; |0000
+; @x $2
+; @x_val $2
+; @cmp $2
+; @r1 $2
+; @r2 $2
+; |0100
+; @main
+; @entry
+; #0015
+; .x STZ2
+; .x LDZ2
+; .x_val STZ2
+; .x_val LDZ2
+; #0010
+; GTH2
+; .cmp STZ2
+; .cmp LDZ2
+; ,ifthen JCN
+; ;ifelse JSR2
+; @ifthen
+; #0007
+; #0006
+; MUL2
+; .r1 STZ2
+; .r1 LDZ2
+; #18 DEO
+; ;end JSR2
+; @ifelse
+; #0007
+; #0005
+; MUL2
+; .r2 STZ2
+; .r2 LDZ2
+; #18 DEO
+; ;end JSR2
+; @end
+; BRK

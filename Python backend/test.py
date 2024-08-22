@@ -157,24 +157,18 @@ def translate_instruction(instruction):
         uxntal_code.append(f".{instruction.name} STZ2") # store the result of comparison in the register
 
     if instruction.opcode == 'br':  # Handle br opcode
-        is_first = True
-        counter = 0
+        operand_list = []
         for operand in instruction.operands:
-            counter += 1
-        
-        if counter == 1:
-            for operand in instruction.operands:
-                uxntal_code.append(f";{operand.name} JSR2")
-        elif counter == 3:
+            operand_list.append(operand.name)        
+        if len(operand_list) == 1:
+            uxntal_code.append(f";{operand_list[0]} JSR2")
+        elif len(operand_list) == 3:
             for operand in instruction.operands:
                 if hasattr(operand, 'name') and operand.name:
                     if str(operand.type) != 'label':
                         uxntal_code.append(f".{operand.name} LDZ2")
-                    elif str(operand.type) == 'label' and is_first == True:
-                        uxntal_code.append(f",{operand.name} JCN")
-                        is_first = False
-                    elif str(operand.type) == 'label' and is_first == False:
-                        uxntal_code.append(f";{operand.name} JSR2")
+            uxntal_code.append(f",{operand_list[2]} JCN")
+            uxntal_code.append(f";{operand_list[1]} JSR2")
                         
     return uxntal_code
 
