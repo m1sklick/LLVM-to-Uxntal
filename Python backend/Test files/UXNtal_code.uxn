@@ -1,27 +1,13 @@
 |0000
-@result $2
-@r1 $2
-@r2 $2
-@r3 $2
+@x $2
+@x_val $2
+@cmp $2
 |0100
 @main
-;add_registers JSR2
-.result STZ2
-.result LDZ2
+#0015
+.x STZ2
+.x LDZ2
+.x_val STZ2
+#18 DEO
 #18 DEO
 BRK
-@add_registers
-#0000
-#0020
-ADD2
-.r1 STZ2
-#0000
-#0022
-ADD2
-.r2 STZ2
-.r1 LDZ2
-.r2 LDZ2
-ADD2
-.r3 STZ2
-.r3 LDZ2
-JMP2r

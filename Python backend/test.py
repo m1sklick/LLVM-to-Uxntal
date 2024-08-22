@@ -7,7 +7,7 @@ binding.initialize_native_target()
 binding.initialize_native_asmprinter()
 
 # Sample LLVM IR code for testing
-with open('example4.ll', 'r') as file:
+with open('example5.ll', 'r') as file:
     llvm_ir = file.read()
 
 # Parse the LLVM IR using llvmlite binding
@@ -106,22 +106,24 @@ def translate_instruction(instruction):
 
     # Handle store opcode separately, putting value into the register and storing it immediately
     if instruction.opcode == "store":
-        # Regex pattern to capture the data type, value, and register name
-        pattern = r"store\s+(\w+)\s+(\d+),\s+\w+\*\s+@(\w+)"
-        # Find the matches
-        match = re.search(pattern, str(instruction))
+        data_type, value, register_name = None, None, None
 
-        # Push value into the stack
-        if match:
-            data_type, value, register_name = match.groups()
+        for operand in instruction.operands:
+            operand_value = get_operand_value(operand)
+            if operand_value.startswith('#'):
+                value = str(operand_value)
+                data_type = str(operand.type)
+            elif not operand_value.startswith('#'):
+                register_name = str(operand_value)
+
+        if data_type != None and value != None and register_name != None:
             if(data_type == "i1" or data_type == "i8"):
-                value_int = int(value)
-                formatted_number = str(value_int).zfill(2)
+                uxntal_code.append(value)
+                uxntal_code.append(f".{register_name} STZ2")
             if(data_type == "i16"):
-                value_int = int(value)
-                formatted_number = str(value_int).zfill(4)
-            uxntal_code.append(f"#{formatted_number}")
-            uxntal_code.append(f".{register_name} STZ2")
+                uxntal_code.append(value)
+                uxntal_code.append(f".{register_name} STZ2")
+            
 
     # Handle load opcode separately, load register to the stack, then store it from the stack to another register
     if instruction.opcode == 'load':
@@ -174,17 +176,18 @@ def add_registers(module):
                     register_name = instruction.name
                     uxntal_register = f"@{register_name} $2"
                     # TODO add the one for 1 byte registers
-                    defined_registers.append(uxntal_register)
+                    if uxntal_register not in defined_registers:
+                                defined_registers.append(uxntal_register)
                 elif instruction.opcode == 'store':
-                    # Regex to capture the type and register name
-                    pattern = r"store\s+(\w+)\s+\d+,\s+\w+\*\s+@(\w+)"
-                    # Find the matches
-                    match = re.search(pattern, str(instruction))
-                    data_type, register_name = match.groups()
-                    # print(f"Data Type: {data_type}")
-                    # print(f"Register Name: {register_name}")
-                    uxntal_register = f"@{register_name} $2"
-                    defined_registers.append(uxntal_register)
+                    # Handle 'store' opcode
+                    for operand in instruction.operands:
+                        operand_value = get_operand_value(operand)
+                        if not operand_value.startswith('#'): # operand should not be an immediate value, it should be a name of the register
+                            register_name = operand_value
+                            uxntal_register = f"@{register_name} $2"
+                            if uxntal_register not in defined_registers:
+                                defined_registers.append(uxntal_register)
+                            
                 
                 
     return defined_registers
