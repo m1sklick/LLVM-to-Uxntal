@@ -48,9 +48,7 @@ def translate_instruction(instruction):
 
     uxntal_code = []
 
-    # print(instruction.opcode)
-    # print(instruction)
-
+    # print(str(instruction) + " --- " + str(instruction.opcode))
     
     # Handle 'ret' instruction
     if instruction.opcode == 'ret':
@@ -63,16 +61,19 @@ def translate_instruction(instruction):
             else:
                 uxntal_code.append(f".{operand_value} LDZ2")
 
-
-
     # Handle call instruction
-
     if instruction.opcode == 'call':
         if 'call i16 @putc' in str(instruction): # Translate the console output instruction
             output = []
-            registers = re.findall(r'%([a-zA-Z]\w*)', str(instruction)) # Extract registers from console display function
-            for reg in registers:
-                output.append(f".{reg} LDZ2")
+            operand_value = None
+            for operand in instruction.operands:
+                operand_value = get_operand_value(operand)
+                if operand_value.startswith("#"):
+                    output.append(operand_value)
+                else:
+                    if operand_value != "putc": # ignore putc operand
+                        output.append(f".{operand_value} LDZ2")
+
             output.append("#18 DEO")
             return output
         else:
@@ -82,8 +83,6 @@ def translate_instruction(instruction):
                 operand_value = get_operand_value(operand)
                 uxntal_code.append(f";{operand_value} JSR2")
                 uxntal_code.append(f".{instruction.name} STZ2")
-
-
 
     if instruction.opcode in op_map:
         uxntal_op = op_map[instruction.opcode]
@@ -124,15 +123,59 @@ def translate_instruction(instruction):
                 uxntal_code.append(value)
                 uxntal_code.append(f".{register_name} STZ2")
             
-
-    # Handle load opcode separately, load register to the stack, then store it from the stack to another register
-    if instruction.opcode == 'load':
+    if instruction.opcode == 'load':     # Handle load opcode separately, load register to the stack, then store it from the stack to another register
         for operand in instruction.operands:
             operand_value = get_operand_value(operand)
             if hasattr(operand, 'name') and operand.name:
                 uxntal_code.append(f".{operand_value} LDZ2")
             uxntal_code.append(f".{instruction.name} STZ2")
 
+
+    if instruction.opcode == 'icmp':    # Handle conditions
+        for operand in instruction.operands:
+            operand_value = get_operand_value(operand)
+            if hasattr(operand, 'name') and operand.name:
+                uxntal_code.append(f".{operand_value} LDZ2")
+            else:
+                uxntal_code.append(operand_value)
+
+        pattern = r"icmp\s+(\w+)"   # Define the regular expression pattern to find the word after "icmp" which will show us what type of comparison is this
+        match = re.search(pattern, str(instruction))
+        if match:   # Check if a match was found
+            comp_type = match.group(1)
+            if comp_type == "sgt":
+                uxntal_code.append("GTH2")
+            elif comp_type == "slt":
+                uxntal_code.append("LTH")
+            elif comp_type == "eq":
+                uxntal_code.append("EQU2")
+            elif comp_type == "ne":
+                uxntal_code.append("NEQ2")
+        else:
+            print("Something is wrong with translation of icmp opcode")
+
+        uxntal_code.append(f".{instruction.name} STZ2") # store the result of comparison in the register
+
+    if instruction.opcode == 'br':  # Handle br opcode
+        is_first = True
+        counter = 0
+        for operand in instruction.operands:
+            counter += 1
+        
+        if counter == 1:
+            for operand in instruction.operands:
+                uxntal_code.append(f";{operand.name} JSR2")
+        elif counter == 3:
+            for operand in instruction.operands:
+                if hasattr(operand, 'name') and operand.name:
+                    if str(operand.type) != 'label':
+                        uxntal_code.append(f".{operand.name} LDZ2")
+                    elif str(operand.type) == 'label' and is_first == True:
+                        uxntal_code.append(f",{operand.name} JCN")
+                        is_first = False
+                    elif str(operand.type) == 'label' and is_first == False:
+                        uxntal_code.append(f";{operand.name} JSR2")
+                        
     return uxntal_code
 
 # # Function to translate control flow instructions
@@ -201,6 +244,8 @@ def llvm_to_uxntal(module):
             continue  # Ignore the functions @printf and @putc
         uxntal_code.append(f"@{function.name}") # define a function
         for block in function.blocks:
+            if str(block.name) != "":
+                uxntal_code.append(f"@{block.name}")
             for instruction in block.instructions:
                 uxntal_instruction = translate_instruction(instruction)
                 

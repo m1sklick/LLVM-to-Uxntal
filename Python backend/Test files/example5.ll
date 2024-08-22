@@ -7,14 +7,14 @@ entry:
 
   %cmp = icmp sgt i16 %x_val, 10
 
-  br i1 %cmp, label %if.then, label %if.else
+  br i1 %cmp, label %ifthen, label %ifelse
 
-if.then:
-  call i16 @putc(i16 89)                    ; ASCII code for 'Y'
+ifthen:
+  call i16 @putc(i16 42)
   br label %end
 
-if.else:
-  call i16 @putc(i16 78)                    ; ASCII code for 'N'
+ifelse:
+  call i16 @putc(i16 41)
   br label %end
 
 end:

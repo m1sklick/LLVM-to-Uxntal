@@ -4,10 +4,25 @@
 @cmp $2
 |0100
 @main
+@entry
 #0015
 .x STZ2
 .x LDZ2
 .x_val STZ2
+.x_val LDZ2
+#0010
+GTH2
+.cmp STZ2
+.cmp LDZ2
+,ifelse JCN
+;ifthen JSR2
+@ifthen
+#0042
 #18 DEO
+;end JSR2
+@ifelse
+#0041
 #18 DEO
+;end JSR2
+@end
 BRK
