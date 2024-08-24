@@ -7,7 +7,7 @@ binding.initialize_native_target()
 binding.initialize_native_asmprinter()
 
 # Sample LLVM IR code for testing
-with open('example5.ll', 'r') as file:
+with open('example0.ll', 'r') as file:
     llvm_ir = file.read()
 
 # Parse the LLVM IR using llvmlite binding
@@ -33,12 +33,9 @@ def get_operand_value(operand):
             formatted_number = str(value_int).zfill(4)
 
         return "#" + formatted_number  # return formatted constant as hex
-    
-# List to track registers used in LLVM IR
-registers = set()
 
 # Function to translate a single LLVM instruction to Uxntal
-def translate_instruction(instruction):
+def translate_instruction(instruction, module):
     op_map = {
         'add': 'ADD2',
         'sub': 'SUB2',
@@ -46,10 +43,19 @@ def translate_instruction(instruction):
         'div': 'DIV2',
     }
 
-    uxntal_code = []
+    # Getting a map of register names and their datasize
+    registers = add_registers(module)
+    del registers[0]
+    map_registers = {}
+    for item in registers:
+        key, value = item.split()  # Split each item by space
+        key = key.lstrip('@')      # Remove the '@' symbol
+        value = value.lstrip('$')  # Remove the '$' symbol
+        map_registers[key] = value
 
+    uxntal_code = []
     # print(str(instruction) + " --- " + str(instruction.opcode))
-    
+
     # Handle 'ret' instruction
     if instruction.opcode == 'ret':
         for operand in instruction.operands:
@@ -59,7 +65,11 @@ def translate_instruction(instruction):
                 uxntal_code.append("BRK")
             #Handle returns in other functions
             else:
-                uxntal_code.append(f".{operand_value} LDZ2")
+                data_size = map_registers.get(operand_value)
+                if data_size == "2":
+                    uxntal_code.append(f".{operand_value} LDZ2")
+                if data_size == "1":
+                    uxntal_code.append(f".{operand_value} LDZ")
 
     # Handle call instruction
     if instruction.opcode == 'call':
@@ -72,13 +82,14 @@ def translate_instruction(instruction):
                     output.append(operand_value)
                 else:
                     if operand_value != "putc": # ignore putc operand
-                        output.append(f".{operand_value} LDZ2")
-
+                        data_size = map_registers.get(operand_value)
+                        if data_size == "2":
+                            output.append(f".{operand_value} LDZ2")
+                        if data_size == "1":
+                            output.append(f".{operand_value} LDZ")
             output.append("#18 DEO")
             return output
-        else:
-            # print("hiadakjd: " + str(instruction))
-            # print(instruction.name)
+        else: # Translate call fo the function
             for operand in instruction.operands:
                 operand_value = get_operand_value(operand)
                 uxntal_code.append(f";{operand_value} JSR2")
@@ -90,7 +101,11 @@ def translate_instruction(instruction):
             operand_value = get_operand_value(operand)
             # print(str(instruction) + " ---- " + operand_value + " ---- " + instruction.opcode) # for debugging!!!
             if hasattr(operand, 'name') and operand.name:
-                uxntal_code.append(f".{operand_value} LDZ2")
+                data_size = map_registers.get(operand_value)
+                if data_size == "2":
+                    uxntal_code.append(f".{operand_value} LDZ2")
+                if data_size == "1":
+                    uxntal_code.append(f".{operand_value} LDZ")
             elif "ret" not in str(instruction): # Ignore ret statement, since we only need to replace that to BRK
                 # if operand_value.startswith('#'):
                 #     uxntal_code.append(operand_value)
@@ -100,8 +115,14 @@ def translate_instruction(instruction):
 
         # Store the result back to a register (memory location)
         if hasattr(instruction, 'name') and instruction.name:
-            result_register = f".{instruction.name}"
-            uxntal_code.append(f"{result_register} STZ2")
+            result_register = f"{instruction.name}"
+            data_size = map_registers.get(instruction.name)
+            if data_size == "2":
+                uxntal_code.append(f".{result_register} STZ2")
+            if data_size == "1":
+                uxntal_code.append(f".{result_register} STZ")
+
+        
 
     # Handle store opcode separately, putting value into the register and storing it immediately
     if instruction.opcode == "store":
@@ -118,24 +139,43 @@ def translate_instruction(instruction):
         if data_type != None and value != None and register_name != None:
             if(data_type == "i1" or data_type == "i8"):
                 uxntal_code.append(value)
-                uxntal_code.append(f".{register_name} STZ2")
+                data_size = map_registers.get(operand_value)
+                if data_size == "2":
+                    uxntal_code.append(f".{operand_value} STZ2")
+                if data_size == "1":
+                    uxntal_code.append(f".{operand_value} STZ")
             if(data_type == "i16"):
                 uxntal_code.append(value)
-                uxntal_code.append(f".{register_name} STZ2")
+                data_size = map_registers.get(operand_value)
+                if data_size == "2":
+                    uxntal_code.append(f".{operand_value} STZ2")
+                if data_size == "1":
+                    uxntal_code.append(f".{operand_value} STZ")
             
     if instruction.opcode == 'load':     # Handle load opcode separately, load register to the stack, then store it from the stack to another register
         for operand in instruction.operands:
             operand_value = get_operand_value(operand)
             if hasattr(operand, 'name') and operand.name:
-                uxntal_code.append(f".{operand_value} LDZ2")
-            uxntal_code.append(f".{instruction.name} STZ2")
-
+                data_size = map_registers.get(operand_value)
+                if data_size == "2":
+                    uxntal_code.append(f".{operand_value} LDZ2")
+                if data_size == "1":
+                    uxntal_code.append(f".{operand_value} LDZ")
+            data_size = map_registers.get(instruction.name)
+            if data_size == "2":
+                uxntal_code.append(f".{instruction.name} STZ2")
+            if data_size == "1":
+                uxntal_code.append(f".{instruction.name} STZ")
 
     if instruction.opcode == 'icmp':    # Handle conditions
         for operand in instruction.operands:
             operand_value = get_operand_value(operand)
             if hasattr(operand, 'name') and operand.name:
-                uxntal_code.append(f".{operand_value} LDZ2")
+                data_size = map_registers.get(operand_value)
+                if data_size == "2":
+                    uxntal_code.append(f".{operand_value} LDZ2")
+                if data_size == "1":
+                    uxntal_code.append(f".{operand_value} LDZ")
             else:
                 uxntal_code.append(operand_value)
 
@@ -154,21 +194,31 @@ def translate_instruction(instruction):
         else:
             print("Something is wrong with translation of icmp opcode")
 
-        uxntal_code.append(f".{instruction.name} STZ2") # store the result of comparison in the register
+        # store the result of comparison in the register
+        data_size = map_registers.get(instruction.name)
+        if data_size == "2":
+            uxntal_code.append(f".{instruction.name} STZ2")
+        if data_size == "1":
+            uxntal_code.append(f".{instruction.name} STZ")
 
     if instruction.opcode == 'br':  # Handle br opcode
         operand_list = []
         for operand in instruction.operands:
             operand_list.append(operand.name)        
         if len(operand_list) == 1:
-            uxntal_code.append(f";{operand_list[0]} JSR2")
+            uxntal_code.append(f";&{operand_list[0]} JMP2")
         elif len(operand_list) == 3:
             for operand in instruction.operands:
                 if hasattr(operand, 'name') and operand.name:
                     if str(operand.type) != 'label':
-                        uxntal_code.append(f".{operand.name} LDZ2")
-            uxntal_code.append(f",{operand_list[2]} JCN")
-            uxntal_code.append(f";{operand_list[1]} JSR2")
+                        operand_value = get_operand_value(operand)
+                        data_size = map_registers.get(operand_value)
+                        if data_size == "2":
+                            uxntal_code.append(f".{operand_value} LDZ2")
+                        if data_size == "1":
+                            uxntal_code.append(f".{operand_value} LDZ")
+            uxntal_code.append(f";&{operand_list[2]} JCN2")
+            uxntal_code.append(f";&{operand_list[1]} JMP2")
                         
     return uxntal_code
 
@@ -184,7 +234,6 @@ def translate_instruction(instruction):
 #         cond_value = get_operand_value(condition)
 #         return [f"{cond_value} JCN ;{true_target} ;{false_target}"]
 #     return []
-
 # # Function to translate memory instructions
 # def translate_memory(instruction):
 #     uxntal_code = []
@@ -211,10 +260,16 @@ def add_registers(module):
                 # Check if we even have registers(avoid immediate variables)
                 if hasattr(instruction, 'name') and instruction.name:
                     register_name = instruction.name
-                    uxntal_register = f"@{register_name} $2"
-                    # TODO add the one for 1 byte registers
+                    type = str(instruction.type)
+                    if type == "i16" or type == "i16*":
+                        uxntal_register = f"@{register_name} $2"
+                    elif type == "i1" or type == "i8" or type == "i1*" or type == "i8*":
+                        uxntal_register = f"@{register_name} $1"
+                    else: 
+                        print("Something wrong with adding registers, may be the register type is not supported!")
+                        uxntal_register = "Error!!!"
                     if uxntal_register not in defined_registers:
-                                defined_registers.append(uxntal_register)
+                        defined_registers.append(uxntal_register)
                 elif instruction.opcode == 'store':
                     # Handle 'store' opcode
                     for operand in instruction.operands:
@@ -224,9 +279,7 @@ def add_registers(module):
                             uxntal_register = f"@{register_name} $2"
                             if uxntal_register not in defined_registers:
                                 defined_registers.append(uxntal_register)
-                            
-                
-                
+
     return defined_registers
 
 # Main function to convert LLVM IR to Uxntal
@@ -239,9 +292,9 @@ def llvm_to_uxntal(module):
         uxntal_code.append(f"@{function.name}") # define a function
         for block in function.blocks:
             if str(block.name) != "":
-                uxntal_code.append(f"@{block.name}")
+                uxntal_code.append(f"&{block.name}")
             for instruction in block.instructions:
-                uxntal_instruction = translate_instruction(instruction)
+                uxntal_instruction = translate_instruction(instruction, module)
                 
                 uxntal_code.extend(uxntal_instruction)
         if function.name != "main":
