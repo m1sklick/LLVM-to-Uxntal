@@ -28,7 +28,7 @@ define i16 @putc(i16 %r3) {
     ret i16 0
 }
 
-@.str = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@.str = private unnamed_addr constant [3 x i8] c"%c\00", align 1
 
 
 ; The compiler's output:
@@ -46,11 +46,11 @@ define i16 @putc(i16 %r3) {
 ; BRK
 ; @add_registers
 ; #0000
-; #0020
+; #0014
 ; ADD2
 ; .r1 STZ2
 ; #0000
-; #0022
+; #0016
 ; ADD2
 ; .r2 STZ2
 ; .r1 LDZ2

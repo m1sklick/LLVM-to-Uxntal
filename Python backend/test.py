@@ -26,10 +26,10 @@ def get_operand_value(operand):
         # but we don't have .constant or .value attribute to get value, we have to use split() method of stirng to get that value
         type, value = str(operand).split()
         if(type == "i1" or type == "i8"):
-            value_int = int(value)
+            value_int = hex(int(value))[2:]
             formatted_number = str(value_int).zfill(2)
         if(type == "i16"):
-            value_int = int(value)
+            value_int = hex(int(value))[2:]
             formatted_number = str(value_int).zfill(4)
 
         return "#" + formatted_number  # return formatted constant as hex
@@ -128,29 +128,42 @@ def translate_instruction(instruction, module):
     if instruction.opcode == "store":
         data_type, value, register_name = None, None, None
 
-        for operand in instruction.operands:
+        for operand in instruction.operands: # load the used values
             operand_value = get_operand_value(operand)
+
             if operand_value.startswith('#'):
                 value = str(operand_value)
                 data_type = str(operand.type)
             elif not operand_value.startswith('#'):
                 register_name = str(operand_value)
 
+        if data_type == None and value == None and register_name != None:
+            data_type = str(operand.type)
+            for operand in instruction.operands: # load the used values
+                if str(get_operand_value(operand)) != register_name:
+                    operand_value = get_operand_value(operand)
+            data_size = map_registers.get(operand_value)
+            if data_size == "2":
+                value = (f".{operand_value} LDZ2")
+            if data_size == "1":
+                value = (f".{operand_value} LDZ")
+            
+
         if data_type != None and value != None and register_name != None:
-            if(data_type == "i1" or data_type == "i8"):
+            if data_type == "i1" or data_type == "i8" or data_type == "i1*" or data_type == "i8*":
                 uxntal_code.append(value)
-                data_size = map_registers.get(operand_value)
+                data_size = map_registers.get(register_name)
                 if data_size == "2":
-                    uxntal_code.append(f".{operand_value} STZ2")
+                    uxntal_code.append(f".{register_name} STZ2")
                 if data_size == "1":
-                    uxntal_code.append(f".{operand_value} STZ")
-            if(data_type == "i16"):
+                    uxntal_code.append(f".{register_name} STZ")
+            if data_type == "i16" or data_type == "i16*":
                 uxntal_code.append(value)
-                data_size = map_registers.get(operand_value)
+                data_size = map_registers.get(register_name)
                 if data_size == "2":
-                    uxntal_code.append(f".{operand_value} STZ2")
+                    uxntal_code.append(f".{register_name} STZ2")
                 if data_size == "1":
-                    uxntal_code.append(f".{operand_value} STZ")
+                    uxntal_code.append(f".{register_name} STZ")
             
     if instruction.opcode == 'load':     # Handle load opcode separately, load register to the stack, then store it from the stack to another register
         for operand in instruction.operands:
@@ -222,32 +235,6 @@ def translate_instruction(instruction, module):
                         
     return uxntal_code
 
-# # Function to translate control flow instructions
-# def translate_control_flow(instruction):
-#     if instruction.opcode == 'br':
-#         # Handle unconditional branches
-#         target = instruction.operands[0]
-#         return [f"JMP ;{target}"]
-#     elif instruction.opcode == 'cond_br':
-#         # Handle conditional branches
-#         condition, true_target, false_target = instruction.operands
-#         cond_value = get_operand_value(condition)
-#         return [f"{cond_value} JCN ;{true_target} ;{false_target}"]
-#     return []
-# # Function to translate memory instructions
-# def translate_memory(instruction):
-#     uxntal_code = []
-#     if instruction.opcode == 'load':
-#         # Load from memory address
-#         address = get_operand_value(instruction.operands[0])
-#         uxntal_code.append(f"{address} LDZ2")
-#     elif instruction.opcode == 'store':
-#         # Store to memory address
-#         print(instruction.opcode)
-#         value, address = instruction.operands
-#         uxntal_code.append(f"{get_operand_value(value)} STZ2 {get_operand_value(address)}")
-#     return uxntal_code
-
 # This function just adds needed registers
 def add_registers(module):
     defined_registers = ["|0000"]
@@ -306,8 +293,8 @@ def llvm_to_uxntal(module):
 
 # Translate the LLVM IR module to Uxntal
 uxntal_code = llvm_to_uxntal(module)
-print("The UXNtal_code.uxn file is generated")
-with open('UXNtal_code.uxn', 'w') as file:
+print("The UXNtal_code.tal file is generated")
+with open('UXNtal_code.tal', 'w') as file:
     for line in uxntal_code:
         file.write(line + '\n')
 print("The generated UXNtal code:")

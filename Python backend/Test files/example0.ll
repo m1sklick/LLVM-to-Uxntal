@@ -1,10 +1,10 @@
 ; LLVM code:
 
-define i16 @main() { ; |0100
+define i16 @main() {
 
   %r1 = mul i16 u0x0007, u0x0006
-  call i16 @putc(i16 %r1); #18 DEO
-  ret i16 0 ; BRK
+  call i16 @putc(i16 %r1)
+  ret i16 0
 }
 
 ; The hardest part is the printing. You can ignore everything below this line.

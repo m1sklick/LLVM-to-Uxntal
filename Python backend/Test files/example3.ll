@@ -1,4 +1,5 @@
 ; LLVM code:
+
 @x = global i16 u0x0000 ; @x $2
 
 define i8 @main() { ; |0100

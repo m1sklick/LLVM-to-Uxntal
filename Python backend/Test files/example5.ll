@@ -1,3 +1,5 @@
+; LLVM code:
+
 define i16 @main() {
 entry:
   %x = alloca i16
@@ -39,38 +41,38 @@ define i16 @putc(i16 %r1) {
 ; |0000
 ; @x $2
 ; @x_val $2
-; @cmp $2
+; @cmp $1
 ; @r1 $2
 ; @r2 $2
 ; |0100
 ; @main
-; @entry
-; #0015
+; &entry
+; #000f
 ; .x STZ2
 ; .x LDZ2
 ; .x_val STZ2
 ; .x_val LDZ2
-; #0010
+; #000a
 ; GTH2
-; .cmp STZ2
-; .cmp LDZ2
-; ,ifthen JCN
-; ;ifelse JSR2
-; @ifthen
+; .cmp STZ
+; .cmp LDZ
+; ;&ifthen JCN2
+; ;&ifelse JMP2
+; &ifthen
 ; #0007
 ; #0006
 ; MUL2
 ; .r1 STZ2
 ; .r1 LDZ2
 ; #18 DEO
-; ;end JSR2
-; @ifelse
+; ;&end JMP2
+; &ifelse
 ; #0007
 ; #0005
 ; MUL2
 ; .r2 STZ2
 ; .r2 LDZ2
 ; #18 DEO
-; ;end JSR2
-; @end
+; ;&end JMP2
+; &end
 ; BRK
