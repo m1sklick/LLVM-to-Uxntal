@@ -1,0 +1,22 @@
+|0000
+@x $2
+@r1 $2
+@r2 $2
+@r3 $2
+|0100
+@main
+#0006
+.x STZ2
+.x LDZ2
+.r1 STZ2
+#0001
+.r1 LDZ2
+ADD2
+.r2 STZ2
+.r2 LDZ2
+#0006
+MUL2
+.r3 STZ2
+.r3 LDZ2
+#18 DEO
+BRK
