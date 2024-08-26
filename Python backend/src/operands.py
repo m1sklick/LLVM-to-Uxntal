@@ -4,7 +4,6 @@ def get_operand_value(operand):
         return f"{operand.name}" # Return as memory reference
     if hasattr(operand, 'constant'):
         print("Operand constant: " + operand.constant)
-        # return f"#{format(operand.constant, '04x')}"  # Format constant as hex
     else:
         # Splitting the operand into type and value, since we only have .type attribute in operand, 
         # but we don't have .constant or .value attribute to get value, we have to use split() method of stirng to get that value

@@ -22,7 +22,6 @@ def translate_instruction(instruction, module):
         map_registers[key] = value
 
     uxntal_code = []
-    # print(str(instruction) + " --- " + str(instruction.opcode))
 
     # Handle 'ret' instruction
     if instruction.opcode == 'ret':
@@ -67,7 +66,6 @@ def translate_instruction(instruction, module):
         uxntal_op = op_map[instruction.opcode]
         for operand in instruction.operands:
             operand_value = get_operand_value(operand)
-            # print(str(instruction) + " ---- " + operand_value + " ---- " + instruction.opcode) # for debugging!!!
             if hasattr(operand, 'name') and operand.name:
                 data_size = map_registers.get(operand_value)
                 if data_size == "2":
@@ -75,9 +73,6 @@ def translate_instruction(instruction, module):
                 if data_size == "1":
                     uxntal_code.append(f".{operand_value} LDZ")
             elif "ret" not in str(instruction): # Ignore ret statement, since we only need to replace that to BRK
-                # if operand_value.startswith('#'):
-                #     uxntal_code.append(operand_value)
-                # else:
                 uxntal_code.append(f"{operand_value}")
         uxntal_code.append(uxntal_op)
 
@@ -89,8 +84,6 @@ def translate_instruction(instruction, module):
                 uxntal_code.append(f".{result_register} STZ2")
             if data_size == "1":
                 uxntal_code.append(f".{result_register} STZ")
-
-        
 
     # Handle store opcode separately, putting value into the register and storing it immediately
     if instruction.opcode == "store":
