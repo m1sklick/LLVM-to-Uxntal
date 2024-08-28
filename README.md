@@ -21,7 +21,7 @@ Degree of Master of Science at The University of Glasgow
 Clone the project
 
 ```bash
-  git clone https://github.com/m1sklick/Project-Wim.git
+  git clone https://github.com/m1sklick/LLVM-to-Uxntal.git
 ```
 
 Go to the project directory
