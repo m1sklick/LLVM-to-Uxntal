@@ -8,6 +8,7 @@ def translate_instruction(instruction, module):
         'add': 'ADD2',
         'sub': 'SUB2',
         'mul': 'MUL2',
+        'udiv': 'DIV2',
         'div': 'DIV2',
     }
 
@@ -37,6 +38,8 @@ def translate_instruction(instruction, module):
                     uxntal_code.append(f".{operand_value} LDZ2")
                 if data_size == "1":
                     uxntal_code.append(f".{operand_value} LDZ")
+                elif operand_value.startswith("#"):
+                    uxntal_code.append(operand_value)
 
     # Handle call instruction
     if instruction.opcode == 'call':

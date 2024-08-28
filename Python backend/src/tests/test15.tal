@@ -1,0 +1,16 @@
+|0000
+@x $2
+|0100
+@main
+&entry
+#0014
+#0014
+ADD2
+.x STZ2
+;&jump_to JMP2
+&skip
+BRK
+&jump_to
+.x LDZ2
+#18 DEO
+BRK

@@ -1,0 +1,14 @@
+|0000
+@my_register $2
+@r1 $2
+|0100
+@main
+#000b
+#0014
+ADD2
+.r1 STZ2
+.r1 LDZ2
+.my_register STZ2
+.r1 LDZ2
+#18 DEO
+BRK

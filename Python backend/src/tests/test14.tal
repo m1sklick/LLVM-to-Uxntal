@@ -1,0 +1,14 @@
+|0000
+@x $2
+|0100
+@main
+&entry
+#000c
+#0020
+ADD2
+.x STZ2
+;&next JMP2
+&next
+.x LDZ2
+#18 DEO
+BRK

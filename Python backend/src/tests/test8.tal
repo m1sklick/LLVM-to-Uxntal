@@ -1,0 +1,11 @@
+|0000
+@value $2
+@loaded_value $2
+|0100
+@main
+&entry
+#002a
+.value STZ2
+.value LDZ2
+.loaded_value STZ2
+.loaded_value LDZ2

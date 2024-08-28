@@ -1,0 +1,20 @@
+|0000
+@x $1
+|0100
+@main
+&entry
+#0005
+#0005
+EQU2
+.x STZ
+.x LDZ
+;&equal JCN2
+;&notequal JMP2
+&equal
+#0031
+#18 DEO
+BRK
+&notequal
+#0030
+#18 DEO
+BRK

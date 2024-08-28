@@ -1,0 +1,12 @@
+|0000
+@r1 $2
+|0100
+@main
+;compute JSR2
+.r1 STZ2
+.r1 LDZ2
+#18 DEO
+BRK
+@compute
+#002a
+JMP2r

@@ -1,0 +1,25 @@
+|0000
+@x $2
+@condition $1
+|0100
+@main
+&entry
+#000f
+#0010
+ADD2
+.x STZ2
+.x LDZ2
+#001e
+EQU2
+.condition STZ
+.condition LDZ
+;&is_equal JCN2
+;&not_equal JMP2
+&is_equal
+#0031
+#18 DEO
+BRK
+&not_equal
+#0030
+#18 DEO
+BRK

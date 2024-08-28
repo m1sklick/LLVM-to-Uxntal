@@ -1,0 +1,33 @@
+|0000
+@counter $2
+@current_counter $2
+@cmp $1
+@new_counter $2
+|0100
+@main
+&entry
+#0023
+.counter STZ2
+;&loop_start JMP2
+&loop_start
+.counter LDZ2
+.current_counter STZ2
+.current_counter LDZ2
+#0000
+EQU2
+.cmp STZ
+.cmp LDZ
+;&loop_end JCN2
+;&print_char JMP2
+&print_char
+.current_counter LDZ2
+#18 DEO
+.current_counter LDZ2
+#0001
+SUB2
+.new_counter STZ2
+.new_counter LDZ2
+.counter STZ2
+;&loop_start JMP2
+&loop_end
+BRK
