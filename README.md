@@ -46,7 +46,7 @@ A lightweight wrapper for LLVM, 'llvmlite' offers a Python API for creating and 
   pip install llvmlite
 ```
 
-Install the LLVM into your system(MacOs).
+Install the LLVM into your system(MacOs). Version used for development: 18.1.8
 
 Using brew
 
