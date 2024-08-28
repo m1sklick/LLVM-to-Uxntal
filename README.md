@@ -46,6 +46,14 @@ A lightweight wrapper for LLVM, 'llvmlite' offers a Python API for creating and 
   pip install llvmlite
 ```
 
+Install the LLVM into your system(MacOs).
+
+Using brew
+
+```bash
+  brew install llvm
+```
+
 In order to use the compiler, firstly go to 'Project-Wim/Python Backend/src/' directory of the repository and then run the following command:
 
 ```bash
